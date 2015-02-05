@@ -18,6 +18,9 @@ package org.cyanogenmod.hardware;
 
 import org.cyanogenmod.hardware.util.FileUtils;
 
+import android.os.SystemProperties;
+import android.text.TextUtils;
+
 import java.io.File;
 
 /**
@@ -26,7 +29,7 @@ import java.io.File;
  */
 public class AdaptiveBacklight {
 
-    private static String FILE_CABC = "/sys/class/lcd/panel/power_reduce";
+    private static String FILE_CABC = SystemProperties.get("ro.cm.hardware.cabc", "/sys/class/lcd/panel/power_reduce");
 
     /**
      * Whether device supports an adaptive backlight technology.
@@ -35,12 +38,7 @@ public class AdaptiveBacklight {
      */
     public static boolean isSupported() {
         File f = new File(FILE_CABC);
-
-        if(f.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return f.exists();
     }
 
     /**
@@ -50,7 +48,7 @@ public class AdaptiveBacklight {
      * the operation failed while reading the status; true in any other case.
      */
     public static boolean isEnabled() {
-        if (Integer.parseInt(FileUtils.readOneLine(FILE_CABC)) == 1) {
+        if (TextUtils.equals(FileUtils.readOneLine(FILE_CABC), "1")) {
             return true;
         } else {
             return false;
