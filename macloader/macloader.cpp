@@ -35,7 +35,6 @@ enum Type {
     SEMCOSH,
     SEMCOVE,
     SEMCO3RD,
-    SEMCO,
     WISOL
 };
 
@@ -105,12 +104,6 @@ int main() {
         type = SEMCO3RD;
     }
 
-    /* semco */
-    if (strncasecmp(mac_addr_half, "c0:bd:d1", 9) == 0 ||
-        strncasecmp(mac_addr_half, "51:f6:6b", 9) == 0) {
-        type = SEMCO;
-    }
-
     /* wisol */
     if (strncasecmp(mac_addr_half, "48:5A:3F", 9) == 0) {
         type = WISOL;
@@ -147,11 +140,6 @@ int main() {
             case SEMCO3RD:
                 ALOGI("Writing semco3rd to %s\n", CID_PATH);
                 ret = fputs("semco3rd", cidfile);
-            break;
-            case SEMCO:
-                /* write semco to cid file */
-                ALOGI("Writing semco to %s\n", CID_PATH);
-                ret = fputs("semco", cidfile);
             break;
             case WISOL:
                 ALOGI("Writing wisol to %s\n", CID_PATH);

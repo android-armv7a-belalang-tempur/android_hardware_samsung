@@ -30,7 +30,12 @@ public class VibratorHW {
 
     public static boolean isSupported() {
         File f = new File(LEVEL_PATH);
-        return f.exists();
+
+        if(f.exists()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static int getMaxIntensity()  {
