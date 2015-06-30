@@ -122,8 +122,8 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
     static String
     requestToString(int request) {
         switch (request) {
-            case RIL_REQUEST_DIAL_EMERGENCY: return "DIAL_EMERGENCY";
-            default: return RIL.requestToString(request);
+            case RIL_REQUEST_DIAL_EMERGENCY: return "DIAL_EMERGENCY"; // We want to take care of this
+            default: return RIL.requestToString(request); // Everything else comes from super class
         }
     }
 
@@ -155,6 +155,11 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
  | egrep "^ *{RIL_" \
  | sed -re 's/\{([^,]+),[^,]+,([^}]+).+/case \1: ret = \2(p); break;/'
              */
+
+            // We want to take care of this
+            case RIL_REQUEST_DIAL_EMERGENCY: ret = responseVoid(p); break;
+
+            // Everything below comes from super class
             case RIL_REQUEST_GET_SIM_STATUS: ret =  responseIccCardStatus(p); break;
             case RIL_REQUEST_ENTER_SIM_PIN: ret =  responseInts(p); break;
             case RIL_REQUEST_ENTER_SIM_PUK: ret =  responseInts(p); break;
@@ -162,10 +167,9 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
             case RIL_REQUEST_ENTER_SIM_PUK2: ret =  responseInts(p); break;
             case RIL_REQUEST_CHANGE_SIM_PIN: ret =  responseInts(p); break;
             case RIL_REQUEST_CHANGE_SIM_PIN2: ret =  responseInts(p); break;
-            case RIL_REQUEST_ENTER_NETWORK_DEPERSONALIZATION: ret =  responseInts(p); break;
+            case RIL_REQUEST_ENTER_DEPERSONALIZATION_CODE: ret =  responseInts(p); break;
             case RIL_REQUEST_GET_CURRENT_CALLS: ret =  responseCallList(p); break;
             case RIL_REQUEST_DIAL: ret =  responseVoid(p); break;
-            case RIL_REQUEST_DIAL_EMERGENCY: ret = responseVoid(p); break;
             case RIL_REQUEST_GET_IMSI: ret =  responseString(p); break;
             case RIL_REQUEST_HANGUP: ret =  responseVoid(p); break;
             case RIL_REQUEST_HANGUP_WAITING_OR_BACKGROUND: ret =  responseVoid(p); break;
@@ -269,6 +273,7 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
             case RIL_REQUEST_REPORT_SMS_MEMORY_STATUS: ret = responseVoid(p); break;
             case RIL_REQUEST_REPORT_STK_SERVICE_IS_RUNNING: ret = responseVoid(p); break;
             case RIL_REQUEST_CDMA_GET_SUBSCRIPTION_SOURCE: ret =  responseInts(p); break;
+            case RIL_REQUEST_GET_DATA_CALL_PROFILE: ret =  responseGetDataCallProfile(p); break;
             case RIL_REQUEST_ISIM_AUTHENTICATION: ret =  responseString(p); break;
             case RIL_REQUEST_ACKNOWLEDGE_INCOMING_GSM_SMS_WITH_PDU: ret = responseVoid(p); break;
             case RIL_REQUEST_STK_SEND_ENVELOPE_WITH_STATUS: ret = responseICC_IO(p); break;
@@ -283,6 +288,7 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
             case RIL_REQUEST_SIM_OPEN_CHANNEL: ret  = responseInts(p); break;
             case RIL_REQUEST_SIM_CLOSE_CHANNEL: ret  = responseVoid(p); break;
             case RIL_REQUEST_SIM_TRANSMIT_APDU_CHANNEL: ret = responseICC_IO(p); break;
+            case RIL_REQUEST_SIM_GET_ATR: ret = responseString(p); break;
             case RIL_REQUEST_NV_READ_ITEM: ret = responseString(p); break;
             case RIL_REQUEST_NV_WRITE_ITEM: ret = responseVoid(p); break;
             case RIL_REQUEST_NV_WRITE_CDMA_PRL: ret = responseVoid(p); break;
@@ -368,11 +374,14 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
     @Override
     public void
     dial(String address, int clirMode, UUSInfo uusInfo, Message result) {
+
+        // We want to take care of this
         if (PhoneNumberUtils.isEmergencyNumber(address)) {
             dialEmergencyCall(address, clirMode, result);
             return;
         }
 
+        // Everything below comes from super class
         RILRequest rr = RILRequest.obtain(RIL_REQUEST_DIAL, result);
         rr.mParcel.writeString(address);
         rr.mParcel.writeInt(clirMode);
@@ -393,10 +402,9 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
 
     public void
     dialEmergencyCall(String address, int clirMode, Message result) {
-        RILRequest rr;
         Rlog.v(RILJ_LOG_TAG, "Emergency dial: " + address);
 
-        rr = RILRequest.obtain(RIL_REQUEST_DIAL_EMERGENCY, result);
+        RILRequest rr = RILRequest.obtain(RIL_REQUEST_DIAL_EMERGENCY, result);
         rr.mParcel.writeString(address + "/");
         rr.mParcel.writeInt(clirMode);
         rr.mParcel.writeInt(0);  // UUS information is absent
